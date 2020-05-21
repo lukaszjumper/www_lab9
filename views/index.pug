@@ -1,0 +1,17 @@
+html
+    head
+        title= title
+    style
+        include style.css
+    body
+        h1= message
+        img(src="https://scontent-waw1-1.xx.fbcdn.net/v/t1.0-9/43386661_2195638840679812_2109908684229312512_n.png?_nc_cat=104&_nc_sid=dd9801&_nc_oc=AQk7DU-kDNcG0Dqu4nTj4xeqv20Be9ktCvnSlmuRvGhpxt2TJxVnARSs0gS0qObmJJM&_nc_ht=scontent-waw1-1.xx&oh=d090187ff826e49df681cd1ae0cab12a&oe=5EEAB4D1")
+        h1="Meme list"
+        ul
+            each meme in memes
+                li
+                   a(href="meme/" + meme.id class="name") #{meme.name}
+                   p= "price: " + meme.current_price
+                   img(src=meme.url)
+                   br
+                   br

@@ -1,0 +1,16 @@
+html
+    head
+        title= "Meme "+meme.id
+    style
+        include style.css
+    body
+        h1="Prices history"
+        table
+            each mem_price in meme.prices
+                tr
+                    td= mem_price
+        h3="Set a new price"
+        form(method="post")
+            input(type="number" name="price" id="price")
+            br
+            input(type="submit" value="Set")
