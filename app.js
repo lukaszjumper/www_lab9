@@ -19,7 +19,7 @@ app.get('/', function(req, res) {
 app.get('/meme/:memeId', function (req, res) {
     let meme = mem_set.get_meme(req.params.memeId);
     if (meme !== undefined) {
-      res.render('meme', { meme: meme, })
+      res.render('meme', { meme: meme, });
     }
     else {
       res.render('undefined');
@@ -33,13 +33,11 @@ app.use(express.urlencoded({
        let meme = mem_set.get_meme(req.params.memeId);
        let price = req.body.price;
        meme.change_price(price);
-       console.log(req.body.price);
        res.render('meme', { meme: meme })
 });
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
 
 app.use(logger('dev'));
 app.use(express.json());

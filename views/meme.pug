@@ -3,7 +3,7 @@ html
         title= "Meme "+meme.id
     style
         include style.css
-    body
+    body    
         h1="Prices history"
         table
             each mem_price in meme.prices
@@ -14,3 +14,5 @@ html
             input(type="number" name="price" id="price")
             br
             input(type="submit" value="Set")
+    script(src="/javascripts/csrf.js")
+    
