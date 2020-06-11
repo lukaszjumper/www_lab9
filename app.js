@@ -5,6 +5,8 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var csrf = require('csurf');
 var bodyParser = require('body-parser')
+var session = require('express-session');
+var SQLiteStore = require('connect-sqlite3')(session);
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -17,35 +19,128 @@ var csrfProtection = csrf({ cookie: true });
 var parseForm = bodyParser.urlencoded({ extended: false });
 
 app.use(cookieParser());
+app.use(session(
+  {
+    store: new SQLiteStore,
+    cookie: { maxAge: 15 * 60 * 1000 },
+    secret: "kPjOmQISN",
+    resave: true,
+    saveUninitialized: true
+  }));
 
 app.set('view engine', 'pug');
 app.get('/', function(req, res) {
   mem_set.get_top((top) => {
-      res.render('index', { title: 'Meme market', message: 'Hello there!', memes: top});
+      if(req.session.page_views){
+        req.session.page_views++;
+      } else {
+        req.session.page_views = 1;
+      }
+      res.render('index', { title: 'Meme market', message: 'Hello there!', memes: top, sites: req.session.page_views});
   });
 });
   
 app.get('/meme/:memeId', csrfProtection, function (req, res) {
+    if(req.session.page_views){
+      req.session.page_views++;
+    } else {
+      req.session.page_views = 1;
+    }
     mem_set.get_meme(req.params.memeId, (meme) => {
     if (meme !== undefined) {
-      res.render('meme', { meme: meme, csrfToken: req.csrfToken()} );
+      res.render('meme', { meme: meme, csrfToken: req.csrfToken(), sites: req.session.page_views} );
     }
     else {
-      res.render('undefined');
+      res.render('undefined', {sites: req.session.page_views});
     }
   });
 });
   
 app.use(express.urlencoded({
     extended: true
-    })); 
-    app.post('/meme/:memeId', parseForm, csrfProtection, function (req, res) {
-      let price = req.body.price;
-      mem_set.change_price(req.params.memeId, price, () => {
-        let meme = mem_set.get_meme(req.params.memeId, (meme) => {
-          res.render('meme', { meme: meme, csrfToken: req.csrfToken()});
-        }); 
+}));
+
+app.post('/meme/:memeId', parseForm, csrfProtection, function (req, res) {
+  if(req.session.page_views){
+    req.session.page_views++;
+  }
+  else {
+    req.session.page_views = 1;
+  }
+  if (req.session.user) {
+    let price = req.body.price;
+    mem_set.change_price(req.params.memeId, price, req.session.user.id, () => {
+      mem_set.get_meme(req.params.memeId, (meme) => {
+        res.render('meme', { meme: meme, csrfToken: req.csrfToken(), sites: req.session.page_views});
+      }); 
+    });
+  }
+  else {
+    mem_set.get_meme(req.params.memeId, (meme) => {
+      res.render('meme', { meme: meme, csrfToken: req.csrfToken(), sites: req.session.page_views, message: "Nie jesteś zalogowany"});
+    });
+  }
+});
+
+app.get('/signup', csrfProtection, function (req, res) {
+  if(req.session.page_views){
+    req.session.page_views++;
+  } else {
+    req.session.page_views = 1;
+  }
+  res.render('signup', {csrfToken: req.csrfToken(), sites: req.session.page_views});
+});
+
+app.post('/signup', parseForm, csrfProtection, function (req, res) {
+  if(req.session.page_views){
+    req.session.page_views++;
+  } else {
+    req.session.page_views = 1;
+  }
+  mem_set.exists(req.body.id, (exists) => {
+    if (exists) {
+      res.render('signup', {message: "Użytkownik już istnieje", csrfToken: req.csrfToken(), sites: req.session.page_views});
+    }
+    else {
+      mem_set.new_user(req.body.id, req.body.password, () => {
+        req.session.user = {id: req.body.id, password: req.body.password};
+        res.redirect('/');
       });
+    }
+  });
+});
+
+app.get('/login', csrfProtection, function(req, res){
+  if(req.session.page_views){
+    req.session.page_views++;
+  } else {
+    req.session.page_views = 1;
+  }
+  res.render('login', {csrfToken: req.csrfToken(), sites: req.session.page_views});
+});
+
+app.post('/login', parseForm, csrfProtection, function(req, res){
+  if(req.session.page_views){
+    req.session.page_views++;
+  } else {
+    req.session.page_views = 1;
+  }
+  mem_set.check(req.body.id, req.body.password, (ok) => {
+    if (ok) {
+      req.session.user = {id: req.body.id, password: req.body.password};
+      res.redirect('/');
+    }
+    else {
+      res.render('login', {message: "Niepoprawne dane", csrfToken: req.csrfToken(), sites: req.session.page_views});
+    }
+  });
+});
+
+app.get('/logout', function(req, res){
+  req.session.destroy(function(){
+     console.log("user logged out.")
+  });
+  res.redirect('/login');
 });
 
 // view engine setup

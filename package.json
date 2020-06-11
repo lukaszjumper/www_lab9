@@ -6,6 +6,9 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "connect": "^3.7.0",
+    "connect-redis": "^4.0.4",
+    "connect-sqlite3": "^0.9.11",
     "cookie-parser": "~1.4.4",
     "csurf": "^1.11.0",
     "debug": "~2.6.9",
@@ -14,6 +17,9 @@
     "http-errors": "~1.6.3",
     "morgan": "~1.9.1",
     "pug": "^2.0.4",
+    "redis": "^3.0.2",
+    "session": "^0.1.0",
+    "sessions": "0.0.2-7",
     "sqlite3": "^4.2.0"
   },
   "devDependencies": {

@@ -1,0 +1,17 @@
+html
+    head
+        title Nowe konto
+    style
+        include style.css
+    body
+        h2="Stwórz nowe konto"
+        form(method="POST")
+            input(name="id" type="text" required placeholder="Login")
+            br
+            input(name="password" type="password" required placeholder = "Hasło")
+            br
+            input(type="hidden" name="_csrf" value= csrfToken)
+            input(type="submit" value="Submit")
+        p=message
+        footer
+            p= "Liczba wyświetlonych stron w sesji: " +sites

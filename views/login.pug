@@ -1,0 +1,18 @@
+html
+    head
+        title Logowanie
+    style
+        include style.css
+    body
+        h2="Logowanie"
+        form(method="POST")
+            input(name="id" type="text" required placeholder="Login")
+            br
+            input(name="password" type="password" required placeholder = "Hasło")
+            br
+            input(type="hidden" name="_csrf" value= csrfToken)
+            input(type="submit" value="Zaloguj się")
+        p=message
+        footer
+            a(href="/signup") Nowe konto
+            p= "Liczba wyświetlonych stron w sesji: " +sites

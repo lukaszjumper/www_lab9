@@ -1,14 +1,5 @@
 const sqlite3 = require('sqlite3').verbose();
 
-
-function create() {
-  sqlite3.verbose();
-  let db = new sqlite3.Database('memy.db');
-  db.run('CREATE TABLE memes (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, url TEXT);');
-  db.run('CREATE TABLE prices (id INTEGER PRIMARY KEY AUTOINCREMENT, mem_id INTEGER, price INTEGER);');
-  db.close();
-}
-
 function add(name, initial_price, url) {
   let db = new sqlite3.Database('memy.db');
   db.run('INSERT INTO memes VALUES(NULL, ?, ?);', [name, url], (err) => {
@@ -29,11 +20,12 @@ function add(name, initial_price, url) {
   db.close();
 }
 
-function change_price(id, price, func) {
+function change_price(id, price, user, func) {
   let db = new sqlite3.Database('memy.db');
-  db.run('INSERT INTO prices VALUES(NULL, ?, ?);', [id, price]);
+  db.run('INSERT INTO prices VALUES(NULL, ?, ?, ?);', [id, price, user], (err) => {
+    func();
+  });
   db.close();
-  func();
 }
 
 function get_meme(id, func) {
@@ -81,16 +73,52 @@ function get_top(func) {
   db.close();
 }
 
-/*create();
-add('Gold', 1000, 'https://i.redd.it/h7rplf9jt8y21.png');
-add('Platinum', 1100, 'http://www.quickmeme.com/img/90/90d3d6f6d527a64001b79f4e13bc61912842d4a5876d17c1f011ee519d69b469.jpg');
-add('Elite', 1200, 'https://i.imgflip.com/30zz5g.jpg');
-add('Studenci', 2000, 'https://scontent-waw1-1.xx.fbcdn.net/v/t1.0-9/28279819_2042667492643615_5779301380012323331_n.png?_nc_cat=101&_nc_sid=8024bb&_nc_oc=AQlCAigqlCm7tygMN7cDsPdmk5p3ygmilXtsycBxr8XjikkujJjUDzuggtpHifCTfTA&_nc_ht=scontent-waw1-1.xx&oh=0a4c2d4cca0309d45ec0b6b8af612149&oe=5EECECB8');
-add('Usos', 900, 'https://scontent-waw1-1.xx.fbcdn.net/v/t1.0-9/84730097_2549641138612912_2019141237692432384_n.jpg?_nc_cat=105&_nc_sid=8024bb&_nc_oc=AQlzeeLEKVVj5HHx_pu-0Sbl_1pdDQXCjphRCs1PnB2BhUqheQyagzP4Ss2-tH1rGRI&_nc_ht=scontent-waw1-1.xx&oh=77b79aad9f91941e12c24bebbffe5457&oe=5EEA63AE');
-add('Bugs', 1900, 'https://scontent-waw1-1.xx.fbcdn.net/v/t1.0-9/62261323_2350639285179766_55145589079277568_n.jpg?_nc_cat=107&_nc_sid=8024bb&_nc_oc=AQkQ4lQK7NsJuMNZeJZgfLt4vu_hpSJvYmE9DeqaSXIUXaA8lE9wbSgvzx_0iworA3E&_nc_ht=scontent-waw1-1.xx&oh=3c9ef186fe14244331c51b117d819dd0&oe=5EEDD9C1');
-*/
+function new_user(login, password, func) {
+  let db = new sqlite3.Database('memy.db');
+  db.run('INSERT INTO users VALUES(?, ?);', [login, password], (err) => {
+    func();
+  });
+  db.close(); 
+}
+
+function check(login, password, func) {
+  let db = new sqlite3.Database('memy.db');
+  db.all('SELECT * FROM users WHERE login=? AND password=?;', [login, password], (err, rows) => {
+    anything = false;
+    rows.forEach(() => {
+      anything = true;
+    });
+    if (!anything) {
+      func(false);
+    }
+    else {
+      func(true);
+    }
+  });
+  db.close();
+}
+
+function exists(login, func) {
+  let db = new sqlite3.Database('memy.db');
+  db.all('SELECT * FROM users WHERE login=?;', [login], (err, rows) => {
+    anything = false;
+    rows.forEach(() => {
+      anything = true;
+    });
+    if (!anything) {
+      func(false);
+    }
+    else {
+      func(true);
+    }
+  });
+  db.close();
+}
 
 module.exports.add = add;
 module.exports.change_price = change_price;
 module.exports.get_meme = get_meme;
 module.exports.get_top = get_top;
+module.exports.new_user = new_user;
+module.exports.check = check;
+module.exports.exists = exists;
