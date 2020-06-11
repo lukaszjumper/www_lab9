@@ -20,27 +20,32 @@ app.use(cookieParser());
 
 app.set('view engine', 'pug');
 app.get('/', function(req, res) {
-      res.render('index', { title: 'Meme market', message: 'Hello there!', memes: mem_set.get_top()});
+  mem_set.get_top((top) => {
+      res.render('index', { title: 'Meme market', message: 'Hello there!', memes: top});
+  });
 });
   
 app.get('/meme/:memeId', csrfProtection, function (req, res) {
-    let meme = mem_set.get_meme(req.params.memeId);
+    mem_set.get_meme(req.params.memeId, (meme) => {
     if (meme !== undefined) {
       res.render('meme', { meme: meme, csrfToken: req.csrfToken()} );
     }
     else {
       res.render('undefined');
     }
+  });
 });
   
 app.use(express.urlencoded({
     extended: true
     })); 
     app.post('/meme/:memeId', parseForm, csrfProtection, function (req, res) {
-       let meme = mem_set.get_meme(req.params.memeId);
-       let price = req.body.price;
-       meme.change_price(price);
-       res.render('meme', { meme: meme, csrfToken: req.csrfToken()})
+      let price = req.body.price;
+      mem_set.change_price(req.params.memeId, price, () => {
+        let meme = mem_set.get_meme(req.params.memeId, (meme) => {
+          res.render('meme', { meme: meme, csrfToken: req.csrfToken()});
+        }); 
+      });
 });
 
 // view engine setup

@@ -8,7 +8,7 @@ html
         table
             each mem_price in meme.prices
                 tr
-                    td= mem_price
+                    td= mem_price.price
         h3="Set a new price"
         form(method="post")
             input(type="number" name="price" id="price")
